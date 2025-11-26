@@ -1,0 +1,152 @@
+.button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.btn-formula {
+    width: 100%;
+    padding: 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.btn-formula:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+.btn-formula.active {
+    background: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+.btn-ml {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.btn-ml:hover {
+    background: #5568d3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.btn-ml.active {
+    background: #4338ca;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+.mode-hint {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: #f0f9ff;
+    border-left: 3px solid #667eea;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .button-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* --- ACCORDION STYLES --- */
+.accordion-group {
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.accordion-header {
+    background: #f8f8f8;
+    padding: 12px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+    user-select: none; /* Prevent text selection during click */
+}
+
+.accordion-header:hover {
+    background: #f0f0f0;
+}
+
+.accordion-header.active {
+    background: #eee;
+}
+
+.accordion-header:last-child {
+    border-bottom: none;
+}
+
+/* Arrow indicator */
+.accordion-header::after {
+    content: '▼'; /* Down arrow */
+    font-size: 10px;
+    transition: transform 0.3s;
+}
+
+.accordion-header.active::after {
+    content: '▲'; /* Up arrow */
+}
+
+.accordion-content {
+    padding: 0 15px;
+    max-height: 0;
+    overflow: hidden;
+    /* Smooth transition for both height and padding */
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out; 
+}
+
+.accordion-content.open {
+    padding: 15px;
+    max-height: 500px; /* Needs to be larger than content height */
+}
+
+.accordion-content.open .control-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Ensure spacing for controls within the accordion */
+.control-group {
+    margin-bottom: 15px; 
+}
+
+/* New style for the conditional ML training panel */
+#ml-training-panel {
+    display: none; /* Default hidden */
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    margin-bottom: 15px;
+}
+#ml-training-panel.visible {
+    display: block;
+}

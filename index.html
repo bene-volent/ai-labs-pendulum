@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Labs - Interactive Science Experiments</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        header {
+            margin-bottom: 60px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        header p {
+            font-size: 15px;
+            color: #666;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .stats span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stats .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .stats .dot.available {
+            background: #4caf50;
+        }
+
+        .stats .dot.progress {
+            background: #ff9800;
+        }
+
+        .class-section {
+            margin-bottom: 50px;
+        }
+
+        .class-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .class-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+        }
+
+        .class-progress {
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        .experiments-list {
+            display: grid;
+            gap: 1px;
+            background: #e0e0e0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .experiment-item {
+            background: white;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .experiment-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: transparent;
+            transition: background 0.15s ease;
+        }
+
+        .experiment-item:hover {
+            background: #f8f8f8;
+        }
+
+        .experiment-item:hover::before {
+            background: #2196F3;
+        }
+
+        .experiment-item.disabled {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .experiment-item.disabled::before {
+            background: #e0e0e0;
+        }
+
+        .experiment-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .experiment-status {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .experiment-status.available {
+            background: #4caf50;
+        }
+
+        .experiment-status.disabled {
+            background: #e0e0e0;
+        }
+
+        .experiment-info {
+            flex: 1;
+        }
+
+        .experiment-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+        }
+
+        .experiment-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .experiment-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.physics {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge.chemistry {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge.biology {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .type-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 500;
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .arrow {
+            color: #ccc;
+            font-size: 18px;
+            transition: transform 0.15s ease;
+        }
+
+        .experiment-item:hover .arrow {
+            transform: translateX(3px);
+            color: #999;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+        }
+
+        footer a {
+            color: #666;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+        }
+
+        footer a:hover {
+            border-bottom-color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 16px;
+            }
+
+            header h1 {
+                font-size: 26px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .experiment-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 16px 20px;
+            }
+
+            .experiment-left {
+                width: 100%;
+            }
+
+            .experiment-meta {
+                margin-left: 22px;
+                margin-top: 10px;
+                flex-wrap: wrap;
+            }
+
+            .arrow {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Labs</h1>
+            <p>Interactive science experiments powered by machine learning models</p>
+        </header>
+
+        <!-- Class 6 -->
+        <section class="class-section">
+            <!-- <div class="class-header">
+                <div class="class-title">Class 6</div>
+                <div class="class-progress">3/3 complete</div>
+            </div> -->
+            <div class="experiments-list">
+                <a href="/pendulum" class="experiment-item">
+                    <div class="experiment-left">
+                        <div class="experiment-status available"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Simple Pendulum Motion</div>
+                            <div class="experiment-desc">Observe oscillatory motion with varying length, angle, and
+                                damping</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge physics">Physics</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <!-- <a href="/class-6/heating" class="experiment-item">
+                    <div class="experiment-left">
+                        <div class="experiment-status available"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Heating Curve Analysis</div>
+                            <div class="experiment-desc">Study temperature changes and phase transitions during heating
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge chemistry">Chemistry</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="/class-6/germination" class="experiment-item">
+                    <div class="experiment-left">
+                        <div class="experiment-status available"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Seed Germination</div>
+                            <div class="experiment-desc">Explore how moisture, temperature, and light affect germination
+                                rates</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge biology">Biology</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a> -->
+            </div>
+        </section>
+
+        <!-- Class 7 -->
+        <!-- <section class="class-section">
+            <div class="class-header">
+                <div class="class-title">Class 7</div>
+                <div class="class-progress">1/3 complete</div>
+            </div>
+            <div class="experiments-list">
+                <a href="/class-7/motion" class="experiment-item">
+                    <div class="experiment-left">
+                        <div class="experiment-status available"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Motion Profiles</div>
+                            <div class="experiment-desc">Analyze constant velocity, acceleration, and sinusoidal motion
+                                patterns</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge physics">Physics</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Crystallization Process</div>
+                            <div class="experiment-desc">Observe crystal formation under different temperature and
+                                concentration conditions</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge chemistry">Chemistry</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Yeast Respiration</div>
+                            <div class="experiment-desc">Monitor CO₂ production during fermentation with varying
+                                conditions</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge biology">Biology</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section> -->
+
+        <!-- Class 8 -->
+        <!-- <section class="class-section">
+            <div class="class-header">
+                <div class="class-title">Class 8</div>
+                <div class="class-progress">2/3 complete</div>
+            </div>
+            <div class="experiments-list">
+                <a href="/class-8/buoyancy" class="experiment-item">
+                    <div class="experiment-left">
+                        <div class="experiment-status available"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Archimedes Principle</div>
+                            <div class="experiment-desc">Investigate buoyant forces and density relationships in fluids
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge physics">Physics</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="/class-8/flame" class="experiment-item">
+                    <div class="experiment-left">
+                        <div class="experiment-status available"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Combustion Flame Analysis</div>
+                            <div class="experiment-desc">Visualize flame intensity patterns for different fuel types
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge chemistry">Chemistry</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Microbial Growth</div>
+                            <div class="experiment-desc">Study population dynamics under varying environmental
+                                conditions</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge biology">Biology</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section> -->
+
+        <!-- Class 9 -->
+        <!-- <section class="class-section">
+            <div class="class-header">
+                <div class="class-title">Class 9</div>
+                <div class="class-progress">0/3 complete</div>
+            </div>
+            <div class="experiments-list">
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Speed of Sound</div>
+                            <div class="experiment-desc">Calculate sound velocity from temperature, humidity, and frequency</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge physics">Physics</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">H₂O₂ Catalysis</div>
+                            <div class="experiment-desc">Monitor oxygen production over time with different catalysts</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge chemistry">Chemistry</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Osmosis</div>
+                            <div class="experiment-desc">Observe mass change over time due to osmotic pressure</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge biology">Biology</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section> -->
+
+        <!-- Class 10 -->
+        <!-- <section class="class-section">
+            <div class="class-header">
+                <div class="class-title">Class 10</div>
+                <div class="class-progress">0/3 complete</div>
+            </div>
+            <div class="experiments-list">
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Ohm's Law I-V Curve</div>
+                            <div class="experiment-desc">Calculate current from voltage and resistance for different circuit elements</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge physics">Physics</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Electrolysis</div>
+                            <div class="experiment-desc">Predict mass deposited and gas produced during electrolysis</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge chemistry">Chemistry</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Photosynthesis Rate</div>
+                            <div class="experiment-desc">Calculate photosynthesis rate from light, CO₂, and temperature</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge biology">Biology</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section> -->
+
+        <!-- Class 11 -->
+        <!-- <section class="class-section">
+            <div class="class-header">
+                <div class="class-title">Class 11</div>
+                <div class="class-progress">1/3 complete</div>
+            </div>
+            <div class="experiments-list">
+                <a href="/class-11/projectile" class="experiment-item">
+                    <div class="experiment-left">
+                        <div class="experiment-status available"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Projectile Motion</div>
+                            <div class="experiment-desc">Calculate range, height, and time of flight for different launch parameters</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge physics">Physics</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Stoichiometry Calculator</div>
+                            <div class="experiment-desc">Predict product moles and theoretical yield from reactant ratios</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge chemistry">Chemistry</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">PCR Gel Analysis</div>
+                            <div class="experiment-desc">Predict DNA yield and band position from PCR parameters</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge biology">Biology</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section> -->
+
+        <!-- Class 12 -->
+        <!-- <section class="class-section">
+            <div class="class-header">
+                <div class="class-title">Class 12</div>
+                <div class="class-progress">0/3 complete</div>
+            </div>
+            <div class="experiments-list">
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Electrostatics</div>
+                            <div class="experiment-desc">Calculate electric potential and field from point charges</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge physics">Physics</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Chemical Kinetics</div>
+                            <div class="experiment-desc">Visualize concentration changes with Arrhenius temperature dependency</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge chemistry">Chemistry</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <a href="#" class="experiment-item disabled">
+                    <div class="experiment-left">
+                        <div class="experiment-status disabled"></div>
+                        <div class="experiment-info">
+                            <div class="experiment-title">Sanger Chromatogram</div>
+                            <div class="experiment-desc">Analyze DNA sequencing peaks from chromatogram data</div>
+                        </div>
+                    </div>
+                    <div class="experiment-meta">
+                        <span class="badge biology">Biology</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section> -->
+
+    </div>
+</body>
+
+</html>

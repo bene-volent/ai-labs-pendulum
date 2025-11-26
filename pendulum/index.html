@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Pendulum - AI Labs</title>
+    
+    <link rel="stylesheet" href="/css/prose.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/experiment-panel.css">
+    <link rel="stylesheet" href="/pendulum/pendulum.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1/dist/tfjs-vis.umd.min.js"></script>
+</head>
+<body>
+    <div class="top-nav">
+        <div class="nav-title">Pendulum Motion</div>
+        <a href="/" class="back-link">← Back to Home</a>
+    </div>
+    
+    <button class="experiment-toggle" id="experimentToggle">
+        Open Experiment
+    </button>
+    
+    <div class="content-wrapper">
+        <div class="theory-panel" id="theoryPanel">
+            <article class="prose" id="theoryContent"></article>
+        </div>
+        
+        <div class="experiment-panel" id="experimentPanel">
+            <div class="resize-handle" id="resizeHandle"></div>
+            <div class="experiment-content">
+                <div class="experiment-title">Pendulum Simulator</div>
+                
+                <div class="control-group">
+                    <div class="control-label">Prediction Mode</div>
+                    <div class="button-group">
+                        <button id="formulaBtn" class="btn-formula active">Formula (T = 2π√(L/g))</button>
+                        <button id="mlBtn" class="btn-ml">ML Model Prediction</button>
+                    </div>
+                </div>
+                
+                <div id="ml-training-panel">
+                    <div class="control-group">
+                        <div class="control-label">ML Model Training</div>
+                        <div id="ml-section">
+                            <button id="trainModelBtn" class="btn-primary" style="margin-bottom: 10px;">Train New Model</button>
+                            <div id="modelStatus" style="font-size: 13px; margin-bottom: 5px; color: #667eea;">Model: Not Loaded</div>
+                            <div class="status-message" id="mlTrainStatus"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-group">
+                    <div class="accordion-header active" id="physicalParamsHeader">
+                        Physical Parameters (L, θ₀, m, g)
+                    </div>
+                    <div class="accordion-content open" id="physicalParamsContent">
+                        <div class="control-group">
+                            <div class="control-label">Length (m)</div>
+                            <input type="range" id="length-m" min="0.1" max="2.0" step="0.01" value="1.0">
+                            <span id="length-mValue">1.0 m</span>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">Initial Angle (θ₀)</div>
+                            <input type="range" id="initialAngle-deg" min="1" max="60" step="1" value="10">
+                            <span id="initialAngle-degValue">10°</span>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">Bob Mass (kg)</div>
+                            <input type="range" id="bobMass-kg" min="0.02" max="0.5" step="0.01" value="0.1">
+                            <span id="bobMass-kgValue">0.1 kg</span>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-label">Gravity (g, m/s²)</div>
+                            <input type="range" id="gravity" min="1.6" max="24" step="0.1" value="9.81">
+                            <span id="gravityValue">9.81 m/s²</span>
+                        </div>
+                    </div>
+
+                    <div class="accordion-header" id="simParamsHeader">
+                        Damping & Simulation Parameters
+                    </div>
+                    <div class="accordion-content" id="simParamsContent">
+                        <div class="control-group">
+                            <div class="control-label">Damping Coeff (c)</div>
+                            <input type="range" id="damping" min="0" max="0.2" step="0.01" value="0.02">
+                            <span id="dampingValue">0.02</span>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">Air Density (kg/m³)</div>
+                            <input type="range" id="airDensity" min="0.8" max="1.3" step="0.01" value="1.225">
+                            <span id="airDensityValue">1.225 kg/m³</span>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">Drag Coeff (Cd)</div>
+                            <input type="range" id="dragCoefficient" min="0.1" max="1.0" step="0.01" value="0.47">
+                            <span id="dragCoefficientValue">0.47</span>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">Total Time (s)</div>
+                            <input type="range" id="totalTime" min="2" max="60" step="1" value="20">
+                            <span id="totalTimeValue">20 s</span>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-label">Time Step (s)</div>
+                            <input type="range" id="timeStep" min="0.005" max="0.05" step="0.005" value="0.01">
+                            <span id="timeStepValue">0.01 s</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="runSimulationBtn" class="btn-primary" style="margin-top: 20px;">Run Simulation</button>
+                
+                <div class="visualization-container">
+                    <div class="viz-title">Physical Motion (Drag Bob to change angle)</div>
+                    <div class="p5-container">
+                        <div id="p5Sketch"></div>
+                    </div>
+                </div>
+
+                <div class="visualization-container">
+                    <div class="viz-title">Simulation Stats</div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Prediction Period (T)</div>
+                            <div class="stat-value" id="predictionPeriod">N/A</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Current Angle</div>
+                            <div class="stat-value" id="currentAngle">0°</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Oscillations</div>
+                            <div class="stat-value" id="oscillations">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Elapsed Time</div>
+                            <div class="stat-value" id="elapsedTime">0 s</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="visualization-container">
+                    <div class="viz-title">Angle vs Time Graph</div>
+                    <div class="chart-container">
+                        <canvas id="angleChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/experiment-controller.js"></script>
+    <script src="/js/chart-utils.js"></script>
+    <script src="/pendulum/ml-pendulum.js"></script> 
+    <script src="/pendulum/pendulum.js"></script>
+    
+    <script>
+        fetch('/pendulum/pendulum-theory.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('theoryContent').innerHTML = html;
+            });
+    </script>
+</body>
+</html>

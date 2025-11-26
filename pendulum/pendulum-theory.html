@@ -1,0 +1,152 @@
+<h1>Simple Pendulum Motion</h1>
+
+<p>A simple pendulum is one of the most elegant demonstrations of periodic motion in physics. When you pull a bob to one side and release it, it swings back and forth in a predictable pattern. This experiment lets you explore how different factors affect this motion.</p>
+
+<h2>What Makes a Pendulum Swing?</h2>
+
+<p>A simple pendulum consists of:</p>
+<ul>
+    <li><strong>Bob (Mass):</strong> The weight at the end that swings</li>
+    <li><strong>String/Rod:</strong> Holds the bob and allows it to swing freely</li>
+    <li><strong>Pivot Point:</strong> The fixed point at the top</li>
+</ul>
+
+<p>When you displace the bob and release it, gravity pulls it back toward the center, causing it to oscillate (swing back and forth).</p>
+
+<h2>Time Period - How Long Does One Swing Take?</h2>
+
+<p>The <strong>time period (T)</strong> is the time it takes for the pendulum to complete one full back-and-forth swing. For small angles (less than 15°), we can calculate it using:</p>
+
+<div class="formula">
+    T = 2π√(L/g)
+</div>
+
+<p>Where:</p>
+<ul>
+    <li><strong>L</strong> = Length of the pendulum (in meters)</li>
+    <li><strong>g</strong> = Acceleration due to gravity (9.81 m/s²)</li>
+    <li><strong>π</strong> = Pi (approximately 3.14159)</li>
+</ul>
+
+<h3>Try This in the Experiment:</h3>
+<div class="experiment-hint">
+    <p><strong>Test 1:</strong> Set length to 20 cm, then 80 cm. Notice how the longer pendulum swings more slowly!</p>
+    <p><strong>Test 2:</strong> Keep length constant but change the initial angle from 2° to 10°. The period stays nearly the same - it doesn't depend on how far you pull it (for small angles).</p>
+</div>
+
+<h2>What About the Bob's Weight?</h2>
+
+<p>Here's something surprising that Galileo discovered: <strong>the mass of the bob doesn't affect the period!</strong> A heavy bob and a light bob of the same length will swing at the same rate.</p>
+
+<p>This is why all objects fall at the same speed in a vacuum - gravity accelerates everything equally, regardless of mass.</p>
+
+<h2>Energy in a Pendulum</h2>
+
+<p>As the pendulum swings, energy continuously transforms between two forms:</p>
+
+<ul>
+    <li><strong>Potential Energy (PE):</strong> Maximum at the highest points of the swing</li>
+    <li><strong>Kinetic Energy (KE):</strong> Maximum at the lowest point (when moving fastest)</li>
+</ul>
+
+<p>In an ideal pendulum with no friction, the total energy (PE + KE) remains constant, and it would swing forever. But in reality...</p>
+
+<h2>Damping - Why Does It Eventually Stop?</h2>
+
+<p><strong>Damping</strong> is the gradual loss of energy from the system. In real pendulums, energy is lost due to:</p>
+
+<ul>
+    <li>Air resistance (drag)</li>
+    <li>Friction at the pivot point</li>
+    <li>Internal friction in the string/rod</li>
+</ul>
+
+<p>The damping coefficient in our experiment represents how quickly energy is lost. Higher damping means the pendulum loses energy faster and stops sooner.</p>
+
+<div class="formula">
+    θ(t) = θ₀ × e^(-bt) × cos(ωt)
+</div>
+
+<p>This formula shows how the angle decreases exponentially over time due to damping (the e^(-bt) term), while still oscillating (the cos(ωt) term).</p>
+
+<h3>Try This in the Experiment:</h3>
+<div class="experiment-hint">
+    <p><strong>Test 3:</strong> Set damping to 0.000 (no damping). Watch it swing with constant amplitude.</p>
+    <p><strong>Test 4:</strong> Set damping to 0.050 (high damping). See how quickly the swings get smaller!</p>
+    <p><strong>Compare:</strong> Run both Formula-Based and ML Model modes with the same settings. The ML model learned these physics patterns from training data.</p>
+</div>
+
+<h2>Small Angle Approximation</h2>
+
+<p>The formula T = 2π√(L/g) works accurately only for <strong>small angles</strong> (typically less than 15°). This is because we use a mathematical approximation:</p>
+
+<p>For small angles: <strong>sin(θ) ≈ θ</strong> (when θ is in radians)</p>
+
+<p>At larger angles, the period actually becomes slightly longer, but this effect is small for angles under 15°. In this experiment, we limit the initial angle to 10° to stay within the valid range.</p>
+
+<h2>Real-World Applications</h2>
+
+<h3>1. Pendulum Clocks</h3>
+<p>Since the period depends only on length and gravity, pendulums make excellent timekeepers. The first accurate mechanical clocks used pendulums.</p>
+
+<h3>2. Seismometers</h3>
+<p>These devices use pendulums to detect ground motion during earthquakes. When the ground shakes, the pendulum's inertia causes it to lag behind, recording the movement.</p>
+
+<h3>3. Measuring Gravity</h3>
+<p>By measuring the period of a pendulum of known length, scientists can calculate the local value of g. This varies slightly at different locations on Earth!</p>
+
+<h3>4. Playground Swings</h3>
+<p>When you pump a swing, you're adding energy at the right moment (at the natural frequency) to increase amplitude - this is called resonance.</p>
+
+<h2>Comparing Formula-Based vs Machine Learning</h2>
+
+<p>This experiment offers two ways to predict pendulum motion:</p>
+
+<h3>Formula-Based Simulation</h3>
+<p>Uses the actual physics equations (shown above) to calculate the angle at every moment in time. This is how scientists have modeled pendulums for centuries. It's accurate, runs continuously, and we understand exactly how it works.</p>
+
+<h3>Machine Learning Model</h3>
+<p>A computer "learned" how pendulums behave by studying thousands of examples with different lengths, angles, and damping values. It doesn't know the formula - it found patterns in the data. This shows how AI can discover physical laws from observations alone!</p>
+
+<div class="experiment-hint">
+    <p><strong>Investigation:</strong> Try extreme values (very long pendulum, high damping) and compare both modes. Do they still agree? Where might the ML model have less training data?</p>
+</div>
+
+<h2>Key Takeaways</h2>
+
+<ul>
+    <li>Period depends on <strong>length and gravity</strong>, not mass or initial angle (for small angles)</li>
+    <li><strong>Damping</strong> causes real pendulums to gradually lose amplitude</li>
+    <li>Energy constantly transforms between <strong>potential and kinetic</strong></li>
+    <li>The <strong>small angle approximation</strong> (sin θ ≈ θ) makes the math simple</li>
+    <li>Both <strong>formula-based physics</strong> and <strong>machine learning</strong> can predict motion accurately</li>
+</ul>
+
+<style>
+.formula {
+    background: #f0f9ff;
+    border-left: 4px solid #667eea;
+    padding: 15px 20px;
+    margin: 20px 0;
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #333;
+}
+
+.experiment-hint {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.experiment-hint p {
+    margin: 8px 0;
+}
+
+.experiment-hint strong {
+    color: #856404;
+}
+</style>
