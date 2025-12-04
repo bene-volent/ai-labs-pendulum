@@ -1,0 +1,9 @@
+{
+  "r": "number",
+  "g": "number",
+  "b": "number",
+  "runId": "string",
+  "indicator": "string",
+  "pH": "number",
+  "pathLengthCm": "number"
+}

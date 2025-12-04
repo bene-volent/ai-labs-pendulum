@@ -1,0 +1,6 @@
+{
+  "runId": "string",
+  "indicator": ["litmus", "universal"],
+  "pH": "number",
+  "pathLengthCm": "number"
+}

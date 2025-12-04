@@ -140,8 +140,46 @@ class PendulumExperiment {
         });
     }
 
+    pauseAnimation() {
+        if (this.isAnimating) {
+            this.isAnimating = false;
+            this.pausedTime = this.sketch.millis();
+            this.sketch.noLoop();
+        }
+    }
+
+    resumeAnimation() {
+        if (!this.isAnimating && this.physicsData.length > 0) {
+            this.isAnimating = true;
+            // Adjust startTime to account for pause duration
+            const pauseDuration = this.sketch.millis() - this.pausedTime;
+            this.startTime += pauseDuration;
+            this.sketch.loop();
+        }
+    }
+
+
     setupButtons() {
         document.getElementById('runSimulationBtn').addEventListener('click', (e) => this.runSimulation(e));
+
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.addEventListener('click', () => {
+            if (this.isAnimating) {
+                this.pauseAnimation();
+                pauseBtn.textContent = 'Resume';
+                pauseBtn.classList.add('paused');
+            } else {
+                this.resumeAnimation();
+                pauseBtn.textContent = 'Pause';
+                pauseBtn.classList.remove('paused');
+            }
+        });
+
+        // NEW: Reset button
+        const resetBtn = document.getElementById('resetBtn');
+        resetBtn.addEventListener('click', () => {
+            this.resetSimulation();
+        });
 
         const formulaBtn = document.getElementById('formulaBtn');
         const mlBtn = document.getElementById('mlBtn');
@@ -154,7 +192,7 @@ class PendulumExperiment {
             this.currentMode = 'formula';
             formulaBtn.classList.add('active');
             mlBtn.classList.remove('active');
-            this.mlTrainingPanel.style.display = 'none'; // FIX: Use display property
+            this.mlTrainingPanel.style.display = 'none';
             this.debounceRunSimulation();
         });
 
@@ -162,12 +200,56 @@ class PendulumExperiment {
             this.currentMode = 'ml';
             mlBtn.classList.add('active');
             formulaBtn.classList.remove('active');
-            this.mlTrainingPanel.style.display = 'block'; // FIX: Use display property
+            this.mlTrainingPanel.style.display = 'block';
             if (!this.isModelTrained) {
                 this.updateStatus('ML Model not trained yet! Click "Train New Model" first.', 'error');
             }
             this.debounceRunSimulation();
         });
+    }
+
+
+    resetSimulation() {
+        // Stop the animation
+        // this.stopAnimation();
+
+        // Reset all input parameters to initial/default values
+        document.getElementById('initialAngle-deg').value = 0;
+        document.getElementById('initialAngle-degValue').textContent = '0°';
+
+        // Clear physics data
+        this.physicsData = [];
+        this.currentFrame = 0;
+        this.oscillationCount = 0;
+        this.lastAngle = 0;
+        this.crossedZero = false;
+        this.elapsedTime = 0;
+
+        // Reset hasRunOnce so it doesn't auto-run on parameter changes
+        this.hasRunOnce = false;
+        this.isBobDragging = true; // Prevent auto-run during reset redraw
+
+        // Reset pause button state
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.textContent = 'Pause';
+        pauseBtn.classList.remove('paused');
+
+        // Clear chart
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
+        }
+
+        // Reset stats display
+        this.updateStats({
+            predictionPeriod: 'N/A',
+            currentAngle: '0°',
+            oscillationCount: 0,
+            elapsedTime: '0 s'
+        });
+
+        // Redraw canvas to show pendulum at rest at 0°
+        this.sketch.redraw();
     }
 
     /** Sets up the ML section, loads persistence, and generates data. */
@@ -190,36 +272,86 @@ class PendulumExperiment {
 
     // NOTE: loadModelAndData, startTraining, fetchPrediction assumed to be correct based on previous context
     async loadModelAndData() {
-        // Placeholder for ML logic
-        this.isModelTrained = false;
-        this.modelStatusEl.textContent = 'Model: Data Ready. Click "Train New Model".';
-        this.updateStatus('Model training is required to use the ML Prediction mode.', 'info');
         if (window.mlPendulum && window.mlPendulum.generateSyntheticPendulumDataset) {
-            this.updateStatus('', 'info');
-            this.modelStatusEl.textContent = 'Model: Generating synthetic training data...';
-            this.teacherData = window.mlPendulum.generateSyntheticPendulumDataset({ n: 800, simDuration_s: 20 });
-            // ... Actual loading logic removed for brevity but assumed to exist
+            this.updateStatus('Generating training dataset (800 samples)...', 'info');
+
+            // Show progress
+            const startTime = Date.now();
+            this.teacherData = window.mlPendulum.generateSyntheticPendulumDataset({
+                n: 800,
+                simDuration_s: 20
+            });
+            const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+            this.modelStatusEl.textContent = `✅ Dataset Ready (${this.teacherData.length} samples, ${duration}s)`;
+            this.updateStatus(`Dataset generated successfully in ${duration} seconds!`, 'success');
         } else {
-            this.modelStatusEl.textContent = 'Model: Module not loaded.';
+            this.modelStatusEl.textContent = '❌ ML Module not loaded';
+            this.updateStatus('Error: ML module not available', 'error');
         }
     }
 
     async startTraining() {
         this.trainModelBtn.disabled = true;
-        this.modelStatusEl.textContent = 'Model: Training in progress... (check Visor window for charts)';
-        this.updateStatus('Training started. Monitoring Loss, MSE, and MAE in the TensorFlow.js Visor.', 'info');
+        this.trainModelBtn.textContent = '⏳ Preparing...';
+        this.trainModelBtn.style.opacity = '0.7';
+
+        // Clear previous status
+        this.updateStatus('Initializing training process...', 'info');
 
         try {
-            if (!this.teacherData) { await this.loadModelAndData(); }
+            // Step 1: Load/Generate data
+            if (!this.teacherData) {
+                this.trainModelBtn.textContent = '📊 Generating Data...';
+                this.updateStatus('Generating 800 synthetic training examples...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 100)); // Allow UI to update
+                await this.loadModelAndData();
+            }
 
-            // Starts training, visualization (tfjs-vis), and saves the model
-            await window.mlPendulum.trainPendulumModel(this.teacherData, { epochs: 100 });
+            // Step 2: Show visor
+            this.trainModelBtn.textContent = '🧠 Building Model...';
+            this.updateStatus('Building neural network architecture...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 500));
 
+            if (window.tfvis) {
+                tfvis.visor().open();
+            }
+
+            // Step 3: Start training
+            this.trainModelBtn.textContent = '🔄 Training...';
+            this.updateStatus('Training in progress. Watch the charts for real-time metrics!', 'info');
+
+            // Training with progress feedback
+            await window.mlPendulum.trainPendulumModel(this.teacherData, {
+                epochs: 100,
+                callbacks: {
+                    onEpochEnd: async (epoch, logs) => {
+                        if (epoch % 10 === 0) {
+                            this.updateStatus(
+                                `Training: Epoch ${epoch}/100 | Loss: ${logs.loss.toFixed(4)}`,
+                                'info'
+                            );
+                        }
+                    }
+                }
+            });
+
+            // Step 4: Success
             this.isModelTrained = true;
+            this.trainModelBtn.textContent = '✅ Training Complete!';
             this.modelStatusEl.textContent = 'Model: Successfully Trained and Saved!';
-            this.updateStatus('Training complete. Model is now ready for predictions.', 'success');
+            this.updateStatus('Training complete! Model ready for predictions.', 'success');
+
+            // Reset button text after 3 seconds
+            setTimeout(() => {
+                this.trainModelBtn.textContent = '🔄 Retrain Model';
+                this.trainModelBtn.style.opacity = '1';
+            }, 3000);
+
         } catch (error) {
-            this.modelStatusEl.textContent = 'Model: Training Failed! (See console)';
+            this.modelStatusEl.textContent = '❌ Training Failed!';
+            this.trainModelBtn.textContent = '🔄 Train New Model';
+            this.trainModelBtn.style.opacity = '1';
             this.updateStatus(`Training Error: ${error.message}`, 'error');
             console.error('ML Training Error:', error);
             if (window.tfvis) window.tfvis.visor().close();
@@ -262,6 +394,7 @@ class PendulumExperiment {
     }
 
     /** Runs the simulation and displays results. */
+    /** Runs the simulation and displays results. */
     async runSimulation(e) {
         if (e) e.preventDefault();
         this.stopAnimation();
@@ -298,11 +431,15 @@ class PendulumExperiment {
         this.initChart(simParams.length_m);
         this.startAnimation();
         this.hasRunOnce = true;
+
+        // Reset pause button state when simulation runs
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.textContent = 'Pause';
+        pauseBtn.classList.remove('paused');
     }
 
     initChart(inputLengthMeters) {
-        // Use the exposed rad2deg helper to convert for charting
-        // FIX: Ensure mlPendulum exposes rad2deg
+
         const rad2deg = window.mlPendulum.rad2deg;
         const timeSeriesAngles = this.physicsData.map(s => rad2deg(s.theta));
 
@@ -344,6 +481,17 @@ class PendulumExperiment {
         this.sketch.noLoop();
     }
 
+    debounceRunSimulation() {
+        if (this.debounceTimer) clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(() => {
+            // Only auto-run if the interaction is done AND if it has run once before
+            // Don't run during drag operations
+            if (!this.isBobDragging && !this.isLengthChanging && this.hasRunOnce) {
+                this.runSimulation();
+            }
+        }, 300);
+    }
+
     // P5.js setup for visualization
     initP5Sketch() {
         const sketch = (p) => {
@@ -352,11 +500,8 @@ class PendulumExperiment {
             let canvasHeight = 300;
             const simTimeStep = this.getInputValue('timeStep');
 
-            // FIX: Pre-fetch helper functions here to avoid repeated window lookups
-            console.log(window.mlPendulum);
             const deg2rad = window.mlPendulum.deg2rad;
             const rad2deg = window.mlPendulum.rad2deg;
-
 
             p.setup = () => {
                 p.createCanvas(canvasWidth, canvasHeight).parent('p5Sketch');
@@ -364,7 +509,6 @@ class PendulumExperiment {
                 p.frameRate(60);
                 p.noLoop();
 
-                // Set up visual constants for the sketch
                 this.originY = 20;
                 this.maxL_vis = canvasHeight - 50;
             };
@@ -373,22 +517,16 @@ class PendulumExperiment {
                 canvasWidth = container.clientWidth;
                 p.resizeCanvas(canvasWidth, canvasHeight);
                 this.maxL_vis = canvasHeight - 50;
-                // Re-calculate the current state to redraw instantly
                 this.runSimulation();
             };
 
-            // --- NEW: Interactive Controls ---
+            // Update the p.mousePressed function:
+            // Replace the p.mousePressed function (around line 458-481)
 
             p.mousePressed = () => {
-                // Only allow manipulation when simulation is stopped or at frame 0
-                if (this.isAnimating && this.currentFrame > 0) return;
-
                 const originX = p.width / 2;
                 const inputLengthMeters = this.getInputValue('length-m');
-
-                // FIX: Use the fetched deg2rad function
                 const theta = deg2rad(this.getInputValue('initialAngle-deg'));
-
                 const L_vis = (inputLengthMeters / 2.0) * this.maxL_vis;
 
                 const bobX = originX + L_vis * Math.sin(theta);
@@ -396,8 +534,9 @@ class PendulumExperiment {
 
                 const distanceToBob = p.dist(p.mouseX, p.mouseY, bobX, bobY);
 
-                if (distanceToBob < 28) { // Bob has a diameter of 28
-                    // Check for length change key (SHIFT or CONTROL)
+                // Only start dragging if clicking near the bob (within 28px)
+                if (distanceToBob < 28) {
+                    // Check if modifier key is pressed for length change mode
                     if (p.keyIsDown(p.SHIFT) || p.keyIsDown(p.CONTROL)) {
                         this.isLengthChanging = true;
                         this.isBobDragging = false;
@@ -405,68 +544,80 @@ class PendulumExperiment {
                         this.isBobDragging = true;
                         this.isLengthChanging = false;
                     }
-                    this.stopAnimation(); // Pause animation while dragging
-                    p.loop(); // Start the loop to redraw the static drag state
+
+                    // Pause animation during drag
+                    this.wasAnimatingBeforeDrag = this.isAnimating;
+                    if (this.isAnimating) {
+                        this.pauseAnimation();
+                    }
+
+                    p.loop();
                 }
             }
 
+            // Update the p.mouseDragged function:
             p.mouseDragged = () => {
-                if (this.isLengthChanging) {
-                    // --- Change Length (L) ---
-                    const newLengthY = p.mouseY - this.originY;
-
-                    // Map visual length back to real length (m)
-                    const newL_vis = p.max(50, newLengthY);
-                    const newLengthMeters = (newL_vis / this.maxL_vis) * 2.0;
-
-                    // Clamp and update control
-                    const L_input = document.getElementById('length-m');
-                    const clampedLength = p.constrain(newLengthMeters, parseFloat(L_input.min), parseFloat(L_input.max));
-                    L_input.value = clampedLength.toFixed(2);
-                    L_input.dispatchEvent(new Event('input')); // Trigger UI update and debounce
-
-                } else if (this.isBobDragging) {
-                    // --- Change Angle (θ₀) ---
+                if (this.isBobDragging) {
                     const originX = p.width / 2;
+
+                    // Calculate angle from mouse position
                     const dx = p.mouseX - originX;
                     const dy = p.mouseY - this.originY;
 
-                    // Calculate the new angle from mouse position (atan2(dx, dy) measures from vertical)
                     let newAngleRad = p.atan2(dx, dy);
-
-                    // Constrain the angle to max angle (60 degrees)
                     const maxAngleRad = deg2rad(60);
                     newAngleRad = p.constrain(newAngleRad, -maxAngleRad, maxAngleRad);
-
-                    // FIX: Use the fetched rad2deg function
                     const newAngleDeg = Math.abs(rad2deg(newAngleRad));
 
-                    // Update control
+                    // Update angle
                     const angle_input = document.getElementById('initialAngle-deg');
                     angle_input.value = newAngleDeg.toFixed(0);
-                    angle_input.dispatchEvent(new Event('input')); // Trigger UI update and debounce
+                    angle_input.dispatchEvent(new Event('input'));
+
+                    // Calculate and update length from mouse distance to origin
+                    const distanceFromOrigin = p.dist(p.mouseX, p.mouseY, originX, this.originY);
+                    const newL_vis = p.max(50, p.min(distanceFromOrigin, this.maxL_vis));
+                    const newLengthMeters = (newL_vis / this.maxL_vis) * 2.0;
+
+                    const L_input = document.getElementById('length-m');
+                    const clampedLength = p.constrain(newLengthMeters, parseFloat(L_input.min), parseFloat(L_input.max));
+                    L_input.value = clampedLength.toFixed(2);
+                    L_input.dispatchEvent(new Event('input'));
                 }
             }
 
+            // Update the p.mouseReleased function:
             p.mouseReleased = () => {
-                if (this.isBobDragging || this.isLengthChanging) {
+                if (this.isBobDragging) {
                     this.isBobDragging = false;
-                    this.isLengthChanging = false;
 
-                    // Force a re-run of the simulation with the new parameters
-                    this.runSimulation();
+                    // Re-run simulation with new parameters
+                    // If it was paused before drag, keep it paused after
+                    this.runSimulation().then(() => {
+                        if (!this.wasAnimatingBeforeDrag) {
+                            // Was paused before, so pause again immediately
+                            setTimeout(() => {
+                                this.pauseAnimation();
+                                const pauseBtn = document.getElementById('pauseBtn');
+                                pauseBtn.textContent = 'Resume';
+                                pauseBtn.classList.add('paused');
+                            }, 50);
+                        }
+                        // Otherwise, it will auto-play from runSimulation
+                    });
                 }
             }
 
-            // --- End Interactive Controls ---
 
+
+            // Update the p.draw function to show dragging visual feedback:
             p.draw = () => {
                 p.background(255);
 
                 const simParams = this.getSimParameters();
                 const inputLengthMeters = simParams.length_m;
 
-                if (!this.physicsData.length) {
+                if (!this.physicsData.length && !this.isBobDragging) {
                     p.fill(150);
                     p.textAlign(p.CENTER, p.CENTER);
                     p.textSize(16);
@@ -477,13 +628,13 @@ class PendulumExperiment {
                 let theta;
                 let dataPoint;
 
-                if (this.isBobDragging || this.isLengthChanging) {
-                    // If dragging, use the current slider values for a static redraw
+                if (this.isBobDragging) {
                     theta = deg2rad(simParams.initialAngle_deg);
                     dataPoint = { t: 0, theta: theta, omega: 0 };
-                    this.physicsData[0] = dataPoint; // Temporarily update first state for visualization
-                } else {
-                    // If animating, proceed with simulation playback
+                    if (this.physicsData.length > 0) {
+                        this.physicsData[0] = dataPoint;
+                    }
+                } else if (this.physicsData.length > 0) {
                     const elapsedWallTime = (p.millis() - this.startTime) / 1000;
                     const simIndex = Math.floor(elapsedWallTime / simTimeStep);
 
@@ -496,18 +647,18 @@ class PendulumExperiment {
                     dataPoint = this.physicsData[this.currentFrame];
                     theta = dataPoint.theta;
                     this.elapsedTime = dataPoint.t;
+                } else {
+                    theta = deg2rad(simParams.initialAngle_deg);
+                    dataPoint = { t: 0, theta: theta, omega: 0 };
                 }
 
                 const originX = p.width / 2;
-
-                // Scale visualization length
                 const L_vis = (inputLengthMeters / 2.0) * this.maxL_vis;
 
                 const bobX = originX + L_vis * Math.sin(theta);
                 const bobY = this.originY + L_vis * Math.cos(theta);
 
-                // --- Oscillation Counting/Stats Update (Only if NOT dragging) ---
-                if (!this.isBobDragging && !this.isLengthChanging) {
+                if (!this.isBobDragging && this.physicsData.length > 0) {
                     const currentAngleDeg = rad2deg(theta);
                     if (this.lastAngle < 0 && currentAngleDeg >= 0) {
                         this.crossedZero = true;
@@ -518,7 +669,6 @@ class PendulumExperiment {
                     }
                     this.lastAngle = currentAngleDeg;
 
-                    // Update stats UI
                     this.updateStats({
                         currentAngle: `${currentAngleDeg.toFixed(1)}°`,
                         oscillationCount: Math.floor(this.oscillationCount),
@@ -526,7 +676,6 @@ class PendulumExperiment {
                     });
                 }
 
-                // --- Drawing ---
                 // Pivot point
                 p.fill(50);
                 p.noStroke();
@@ -537,7 +686,7 @@ class PendulumExperiment {
                 p.strokeWeight(1.5);
                 p.line(originX, this.originY, bobX, bobY);
 
-                // Bob color gradient (Visual indicator of progress)
+                // Bob
                 const progress = this.physicsData.length ? (this.currentFrame / this.physicsData.length) : 0;
                 let bobR, bobG, bobB;
                 const baseColor = this.currentMode === 'formula' ? [76, 175, 80] : [102, 126, 234];
@@ -551,14 +700,19 @@ class PendulumExperiment {
                 p.strokeWeight(2);
                 p.circle(bobX, bobY, 28);
 
-                // Visual cue for length change mode
-                if (this.isLengthChanging) {
-                    p.fill(255, 0, 0, 100);
+                // Visual cue when dragging
+                if (this.isBobDragging) {
+                    p.fill(102, 126, 234, 100);
+                    p.noStroke();
                     p.circle(bobX, bobY, 40);
                     p.textAlign(p.CENTER, p.CENTER);
-                    p.fill(255, 0, 0);
-                    p.textSize(10);
-                    p.text("Length Mode (Shift/Ctrl)", originX, this.originY + L_vis + 30);
+                    p.fill(102, 126, 234);
+                    p.textSize(12);
+                    // Show "Drag to Adjust" at 40px from bob, along the current angle
+                    const dragLabelRadius = 40;
+                    const labelX = bobX + dragLabelRadius * Math.sin(theta);
+                    const labelY = bobY + dragLabelRadius * Math.cos(theta);
+                    p.text("Drag to Adjust", labelX, labelY);
                 }
 
                 // Labels
@@ -568,7 +722,8 @@ class PendulumExperiment {
                 p.textAlign(p.CENTER);
 
                 const modeText = this.currentMode === 'formula' ? 'Formula-Based' : 'ML Model';
-                p.text(`${modeText} | Length: ${inputLengthMeters} m`, originX, p.height - 10);
+                const statusText = this.isAnimating ? 'Playing' : 'Paused';
+                p.text(`${modeText} | ${statusText} | Length: ${inputLengthMeters.toFixed(2)} m | Angle: ${simParams.initialAngle_deg.toFixed(0)}°`, originX, p.height - 10);
             };
 
             this.sketch = p;

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acid-Base pH Indicators - AI Labs</title>
+
+    <link rel="stylesheet" href="/css/prose.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/experiment-panel.css">
+    <link rel="stylesheet" href="/acid base/acid-base.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1/dist/tfjs-vis.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="top-nav">
+        <div class="nav-title">Acid-Base pH Indicators</div>
+        <a href="/" class="back-link">← Back to Home</a>
+    </div>
+
+    <button class="experiment-toggle" id="experimentToggle">
+        Open Experiment
+    </button>
+
+    <div class="content-wrapper">
+        <div class="theory-panel" id="theoryPanel">
+            <article class="prose" id="theoryContent"></article>
+        </div>
+
+        <div class="experiment-panel" id="experimentPanel">
+            <div class="resize-handle" id="resizeHandle"></div>
+            <div class="experiment-content">
+                <div class="experiment-title">🧪 pH Indicator Simulator</div>
+
+                <!-- Mode Selection -->
+                <div class="control-group">
+                    <div class="control-label">Prediction Mode</div>
+                    <div class="button-group">
+                        <button id="formulaModeBtn" class="btn-formula active">Chemistry Formula</button>
+                        <button id="mlModeBtn" class="btn-ml">ML Model Prediction</button>
+                    </div>
+                    <div id="modeHint" class="mode-hint">
+                        Using Henderson-Hasselbalch equation for litmus, RGB interpolation for universal
+                    </div>
+                </div>
+
+                <!-- ML Training Section -->
+                <div id="mlSection" style="display: none;">
+                    <div class="section-title" style="margin-top: 20px;">
+                        🤖 Machine Learning Training
+                    </div>
+
+                    <div id="modelStatus" class="model-status-badge">
+                        Model: Not Loaded
+                    </div>
+
+                    <div id="mlStatus" class="status-message"></div>
+
+                    <button id="trainModelBtn" class="btn-ml-train">
+                        🚀 Train New Model
+                    </button>
+
+                    <div class="ml-info-box">
+                        <strong>ℹ️ Training Info:</strong> The model will train on 1000 synthetic pH indicator samples.
+                        Watch the TensorFlow Visor for real-time metrics.
+                    </div>
+                </div>
+
+                <!-- Indicator Type Selection -->
+                <div class="control-group" style="margin-top: 20px;">
+                    <div class="control-label">Indicator Type</div>
+                    <div class="indicator-options">
+                        <label class="indicator-option">
+                            <input type="radio" name="indicator" value="universal" id="indicator-universal" checked>
+                            <span class="indicator-name">Universal Indicator</span>
+                            <span class="indicator-desc">Full pH range (Red → Orange → Green → Blue → Purple)</span>
+                        </label>
+                        <label class="indicator-option">
+                            <input type="radio" name="indicator" value="litmus" id="indicator-litmus">
+                            <span class="indicator-name">Litmus Paper</span>
+                            <span class="indicator-desc">Simple acid-base (Red in acid, Blue in base)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- pH Control -->
+                <div class="control-group">
+                    <div class="control-label">
+                        pH Level: <span id="valuePH" class="control-value">7.0</span>
+                    </div>
+                    <input type="range" id="inputPH" min="0" max="14" step="0.1" value="7.0" class="slider">
+                    <div class="slider-labels">
+                        <span>0 (Very Acidic)</span>
+                        <span>7 (Neutral)</span>
+                        <span>14 (Very Basic)</span>
+                    </div>
+                </div>
+
+                <!-- Common Solutions Presets -->
+                <div class="control-group">
+                    <div class="control-label">Try Common Solutions</div>
+                    <div class="preset-grid">
+                        <button id="battery-acid" class="preset-btn preset-acid">Battery Acid (1.0)</button>
+                        <button id="lemon-juice" class="preset-btn preset-acid">Lemon Juice (2.0)</button>
+                        <button id="vinegar" class="preset-btn preset-acid">Vinegar (2.4)</button>
+                        <button id="orange-juice" class="preset-btn preset-acid">Orange Juice (3.5)</button>
+                        <button id="coffee" class="preset-btn preset-weak-acid">Coffee (5.0)</button>
+                        <button id="milk" class="preset-btn preset-weak-acid">Milk (6.5)</button>
+                        <button id="pure-water" class="preset-btn preset-neutral">Pure Water (7.0)</button>
+                        <button id="sea-water" class="preset-btn preset-weak-base">Sea Water (8.0)</button>
+                        <button id="baking-soda" class="preset-btn preset-weak-base">Baking Soda (9.0)</button>
+                        <button id="milk-of-magnesia" class="preset-btn preset-base">Milk of Magnesia (10.5)</button>
+                        <button id="ammonia" class="preset-btn preset-base">Ammonia (11.5)</button>
+                        <button id="bleach" class="preset-btn preset-base">Bleach (12.5)</button>
+                        <button id="drain-cleaner" class="preset-btn preset-base">Drain Cleaner (14.0)</button>
+                    </div>
+                </div>
+
+                <!-- Path Length Control -->
+                <div class="control-group">
+                    <div class="control-label">
+                        Solution Path Length: <span id="valuePathLength" class="control-value">1.0 cm</span>
+                    </div>
+                    <input type="range" id="inputPathLength" min="0.5" max="2.0" step="0.1" value="1.0" class="slider">
+                    <div class="slider-labels">
+                        <span>0.5 cm (Lighter)</span>
+                        <span>2.0 cm (Darker)</span>
+                    </div>
+                </div>
+
+                <!-- Reset Button -->
+                <button id="resetBtn" class="btn-reset" style="margin-top: 10px; width: 100%;">
+                    ↻ Reset to Neutral (pH 7)
+                </button>
+
+                <!-- Visualization -->
+                <div class="visualization-container" style="margin-top: 20px;">
+                    <div class="viz-title">Test Tube Visualization</div>
+                    <div class="p5-container" id="p5Container"></div>
+                </div>
+
+                <!-- Stats Display -->
+                <div class="visualization-container">
+                    <div class="viz-title">Solution Properties</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">pH Value</div>
+                            <div class="stat-value" id="statPH">7.00</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Indicator Type</div>
+                            <div class="stat-value" id="statIndicator">Universal</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Nature</div>
+                            <div class="stat-value" id="statNature">Neutral</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">RGB Color</div>
+                            <div class="stat-value" id="statRGB">R:0 G:255 B:0</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/experiment-controller.js"></script>
+    <script src="/acid base/ml-acid-base.js"></script>
+    <script src="/acid base/acid-base.js"></script>
+
+    <script>
+        fetch('/acid base/acid-base-theory.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('theoryContent').innerHTML = html;
+            });
+    </script>
+</body>
+
+</html>

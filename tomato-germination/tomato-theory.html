@@ -1,0 +1,283 @@
+<h1>Tomato Plant Growth & Phenology</h1>
+
+<p>
+    Growing plants is one of nature's most fascinating processes. From a tiny seed emerges a complex organism that 
+    responds to its environment, accumulates energy from sunlight, and produces fruits—all following predictable 
+    biological patterns. This experiment lets you explore how temperature, water, light, and nutrients affect a 
+    tomato plant's 90-day journey from seed to harvest.
+</p>
+
+<h2>What is Plant Phenology?</h2>
+
+<p>
+    <strong>Phenology</strong> is the study of periodic life cycle events in plants and animals. For tomato plants, 
+    these stages include germination, seedling growth, vegetative development, flowering, fruit set, and ripening. 
+    Each stage happens in a specific sequence and is triggered by environmental cues—especially temperature.
+</p>
+
+<div class="formula">
+    <strong>The Seven Stages of Tomato Growth:</strong><br>
+    <code>Seed → Germination → Seedling → Vegetative → Flowering → Fruit Set → Fruit Development → Ripening</code>
+</div>
+
+<h2>Growing Degree Days (GDD): The Temperature Clock</h2>
+
+<p>
+    Unlike animals with internal body heat, plants are <strong>ectothermic</strong>—their metabolic rate depends on 
+    external temperature. Scientists use <strong>Growing Degree Days (GDD)</strong> to measure the accumulated heat 
+    energy a plant receives over time.
+</p>
+
+<div class="formula">
+    <strong>Daily GDD Formula:</strong><br>
+    <code>GDD<sub>daily</sub> = max(0, T<sub>avg</sub> - T<sub>base</sub>)</code><br><br>
+    Where:<br>
+    • <code>T<sub>avg</sub></code> = Average daily temperature (°C)<br>
+    • <code>T<sub>base</sub></code> = 10°C (tomato's minimum growth temperature)<br>
+    • GDD is measured in degree-days (°C·d)
+</div>
+
+<h3>How GDD Works</h3>
+
+<p>
+    Think of GDD as a "thermal timer" for plant development. Each day above 10°C, the plant accumulates degree-days. 
+    When the cumulative GDD reaches certain thresholds, the plant transitions to the next growth stage:
+</p>
+
+<ul>
+    <li><strong>0-50 GDD:</strong> Germination (seed absorbs water, embryo activates)</li>
+    <li><strong>50-200 GDD:</strong> Seedling (cotyledons emerge, first true leaves appear)</li>
+    <li><strong>200-400 GDD:</strong> Vegetative growth (rapid stem elongation, leaf production)</li>
+    <li><strong>400-700 GDD:</strong> Flowering (yellow flowers bloom at leaf nodes)</li>
+    <li><strong>700-1000 GDD:</strong> Fruit set (pollinated flowers develop into green tomatoes)</li>
+    <li><strong>1000-1300 GDD:</strong> Fruit development (tomatoes enlarge)</li>
+    <li><strong>1300+ GDD:</strong> Ripening (green tomatoes turn red as chlorophyll breaks down)</li>
+</ul>
+
+<div class="note">
+    <strong>💡 Example:</strong> At a constant 24°C, the plant accumulates 14 GDD per day (24 - 10 = 14). 
+    It would reach the flowering stage (400 GDD) in approximately 29 days.
+</div>
+
+<h2>Environmental Factors Beyond Temperature</h2>
+
+<p>
+    While GDD drives stage transitions, four other factors modulate <em>how fast</em> the plant grows within each stage:
+</p>
+
+<h3>1. Soil Moisture (💧)</h3>
+<p>
+    Water is essential for photosynthesis, nutrient transport, and cell turgor. Too little causes wilting; too much 
+    causes root rot and oxygen deprivation.
+</p>
+
+<div class="formula">
+    <strong>Moisture Multiplier:</strong><br>
+    • Optimal: ~60% (multiplier = 1.5)<br>
+    • Too dry (10%): multiplier = 0.5<br>
+    • Too wet (100%): multiplier = 0.5<br>
+    Effect: <em>Parabolic curve peaking at 60%</em>
+</div>
+
+<h3>2. Sunlight Hours (☀️)</h3>
+<p>
+    Tomatoes are sun-loving plants requiring 8-12 hours of light daily for optimal photosynthesis. More light = more 
+    glucose production = faster growth (up to a saturation point).
+</p>
+
+<div class="formula">
+    <strong>Light Multiplier:</strong><br>
+    • 0 hours: multiplier = 0.4 (survival mode)<br>
+    • 12+ hours: multiplier = 1.4 (maximum photosynthesis)<br>
+    Effect: <em>Linear increase up to 12 hours, then plateaus</em>
+</div>
+
+<h3>3. Soil Nutrients (🌾)</h3>
+<p>
+    Plants require nitrogen (N), phosphorus (P), and potassium (K), plus micronutrients like calcium and iron. 
+    Our model uses a simplified "nutrient index" (0-100) representing overall soil fertility.
+</p>
+
+<div class="formula">
+    <strong>Nutrient Multiplier:</strong><br>
+    • Low (0): multiplier = 0.6 (stunted, yellowing leaves)<br>
+    • High (100): multiplier = 1.4 (lush, dark green foliage)<br>
+    Effect: <em>Linear relationship</em>
+</div>
+
+<h3>4. Pest Pressure (🐛)</h3>
+<p>
+    Insects, diseases, and herbivores reduce plant health by damaging leaves, stems, and fruits. High pest pressure 
+    slows growth and can destroy developing tomatoes.
+</p>
+
+<div class="formula">
+    <strong>Pest Multiplier:</strong><br>
+    • No pests (0): multiplier = 1.0<br>
+    • Severe (10): multiplier = 0.7 (30% growth reduction)<br>
+    Effect: <em>Linear negative impact, plus direct fruit loss in late stages</em>
+</div>
+
+<h2>The Growth Equation: Biomass Accumulation</h2>
+
+<p>
+    The plant's internal "biomass" (total living tissue) grows according to a <strong>logistic equation</strong>—
+    fast initially, then slowing as the plant approaches its maximum size:
+</p>
+
+<div class="formula">
+    <strong>Daily Biomass Change:</strong><br>
+    <code>ΔB = r × B × (1 - B) × GDD<sub>effective</sub></code><br><br>
+    Where:<br>
+    • <code>r</code> = Growth rate constant (0.05)<br>
+    • <code>B</code> = Current biomass (0 to 1, representing 0% to 100% mature size)<br>
+    • <code>(1 - B)</code> = Remaining growth potential<br>
+    • <code>GDD<sub>effective</sub> = GDD<sub>daily</sub> × moisture × light × nutrients × (1 - pest)</code>
+</div>
+
+<p>
+    Biomass is then converted to observable traits:
+</p>
+
+<ul>
+    <li><strong>Height:</strong> <code>150 × (1 - e<sup>-4B</sup>)</code> cm (max 150 cm)</li>
+    <li><strong>Leaf Count:</strong> <code>40 × (1 - e<sup>-3B</sup>)</code> leaves (max 40)</li>
+    <li><strong>Fruit Count:</strong> Generated during "fruit_set" stage, reduced by pests later</li>
+</ul>
+
+<h2>Germination: A Special Case</h2>
+
+<p>
+    Before growth can begin, the seed must <strong>germinate</strong>—a process requiring specific conditions:
+</p>
+
+<div class="formula">
+    <strong>Germination Rate:</strong><br>
+    <code>Rate = 15% × T<sub>factor</sub> × M<sub>factor</sub></code><br><br>
+    • <code>T<sub>factor</sub></code> = 1.0 at 22°C (optimal), decreases with distance from ideal<br>
+    • <code>M<sub>factor</sub></code> = 1.0 at 55% moisture (optimal)<br>
+    Seed is "germinated" when accumulated percentage reaches 100%
+</div>
+
+<div class="warning">
+    <strong>⚠️ Cold Shock:</strong> Below 10°C, tomato seeds won't germinate. At 8°C, the seed remains dormant 
+    indefinitely, waiting for warmer conditions.
+</div>
+
+<h2>Health Index: Overall Plant Condition</h2>
+
+<p>
+    The plant's health is a weighted average of environmental conditions, reflecting leaf color, disease resistance, 
+    and vigor:
+</p>
+
+<div class="formula">
+    <strong>Health Index (0-1):</strong><br>
+    <code>Health = 0.55 × moisture + 0.20 × light + 0.25 × nutrients - 0.03 × pests</code>
+</div>
+
+<p>
+    A health index above 0.8 indicates thriving conditions (dark green leaves, rapid growth). Below 0.5 signals stress 
+    (yellowing, stunted growth).
+</p>
+
+<h2>Real-World Applications</h2>
+
+<h3>1. Precision Agriculture</h3>
+<p>
+    Farmers use GDD models to predict harvest dates, schedule irrigation, and apply fertilizers at optimal times. 
+    Knowing when flowering will occur allows targeted pest control and pollinator management.
+</p>
+
+<h3>2. Climate Change Impact Studies</h3>
+<p>
+    As global temperatures rise, GDD accumulation rates change. This model helps predict how warming affects crop 
+    yields—will tomatoes ripen earlier? Will pests have more generations per season?
+</p>
+
+<h3>3. Greenhouse Management</h3>
+<p>
+    In controlled environments, growers can manipulate temperature, light cycles, and nutrients to accelerate or 
+    delay growth stages, maximizing yields and timing harvests for market demand.
+</p>
+
+<h3>4. Educational Simulations</h3>
+<p>
+    Students can experiment with "what-if" scenarios impossible in real life: What happens if temperature drops 
+    to 5°C for a week? How does zero sunlight affect fruit production? Can extreme nutrients compensate for 
+    low moisture?
+</p>
+
+<h2>Formula vs. Machine Learning</h2>
+
+<p>
+    This experiment offers two prediction modes:
+</p>
+
+<h3>Formula Mode (Physics-Based)</h3>
+<p>
+    Uses the mathematical equations described above—deterministic, explainable, and based on biological principles. 
+    Perfect for understanding <em>why</em> plants behave as they do.
+</p>
+
+<h3>ML Mode (Data-Driven)</h3>
+<p>
+    A neural network trained on 1000+ simulated growth cycles learns patterns without being explicitly programmed 
+    with formulas. It can:
+</p>
+
+<ul>
+    <li>Predict height at any target day (e.g., "How tall on day 60?")</li>
+    <li>Handle complex non-linear interactions between factors</li>
+    <li>Improve with more training data (including your experimental runs)</li>
+</ul>
+
+<div class="note">
+    <strong>💡 Key Insight:</strong> The ML model doesn't "understand" GDD or photosynthesis—it recognizes 
+    statistical correlations in the data. Yet it can achieve high accuracy (RMSE &lt; 3 cm) by learning the 
+    underlying patterns encoded in the physics-based simulation.
+</div>
+
+<h2>Try These Experiments</h2>
+
+<ol>
+    <li><strong>Optimal Growth:</strong> Find the parameter combination that produces the tallest plant at day 90</li>
+    <li><strong>Drought Stress:</strong> Set moisture to 20% and observe stunted growth despite adequate temperature</li>
+    <li><strong>Overwatering:</strong> Max out moisture at 100%—does the plant thrive or suffer?</li>
+    <li><strong>No Sunlight:</strong> Set sunlight to 0 hours—how long can the plant survive on stored energy?</li>
+    <li><strong>Pest Outbreak:</strong> Start with low pests, then increase to 10 at day 50—watch fruit loss</li>
+    <li><strong>Early Harvest:</strong> Train the ML model to predict height at day 30 instead of 90</li>
+    <li><strong>Climate Scenarios:</strong> Compare 18°C vs 28°C constant temperatures—which reaches ripening first?</li>
+</ol>
+
+<h2>Glossary</h2>
+
+<ul>
+    <li><strong>Biomass:</strong> Total dry weight of living plant tissue (roots, stems, leaves, fruits)</li>
+    <li><strong>Cotyledons:</strong> Embryonic seed leaves that emerge first during germination</li>
+    <li><strong>Ectothermic:</strong> Organism whose body temperature depends on external heat sources</li>
+    <li><strong>GDD (Growing Degree Days):</strong> Cumulative heat units above base temperature</li>
+    <li><strong>Logistic Growth:</strong> S-shaped growth curve starting slow, accelerating, then plateauing</li>
+    <li><strong>Phenology:</strong> Study of periodic life cycle events in organisms</li>
+    <li><strong>Photosynthesis:</strong> Process converting CO₂ + water + light → glucose + oxygen</li>
+    <li><strong>Turgor Pressure:</strong> Water pressure inside plant cells providing structural rigidity</li>
+</ul>
+
+<h2>Further Reading</h2>
+
+<ul>
+    <li>McMaster, G. S., & Wilhelm, W. W. (1997). "Growing degree-days: one equation, two interpretations"</li>
+    <li>Allen, J. C. (1976). "A modified sine wave method for calculating degree days"</li>
+    <li>Jones, J. W., et al. (2003). "The DSSAT cropping system model"</li>
+    <li>Marcelis, L. F. M. (1996). "Sink strength as a determinant of dry matter partitioning in the whole plant"</li>
+</ul>
+
+<div class="highlight">
+    <strong>🎓 Learning Objectives:</strong><br>
+    After completing this experiment, you should understand:<br>
+    • How temperature drives plant development through GDD accumulation<br>
+    • The interplay between water, light, nutrients, and pests in plant growth<br>
+    • How mathematical models simulate biological processes<br>
+    • The difference between mechanistic (formula) and empirical (ML) approaches<br>
+    • Real-world applications of phenology models in agriculture
+</div>

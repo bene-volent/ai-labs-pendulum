@@ -1,0 +1,8 @@
+{
+  "avgTempC": { "label": "Average Temperature (°C)", "min": 8, "max": 36, "step": 1, "default": 24 },
+  "soilMoisturePct": { "label": "Soil Moisture (%)", "min": 10, "max": 100, "step": 1, "default": 60 },
+  "sunlightHours": { "label": "Sunlight (hours/day)", "min": 0, "max": 14, "step": 0.5, "default": 9 },
+  "soilN": { "label": "Soil Nutrient Index (0-100)", "min": 0, "max": 100, "step": 1, "default": 60 },
+  "pestPressure": { "label": "Pest Pressure (0-10)", "min": 0, "max": 10, "step": 1, "default": 1 },
+  "days": { "label": "Days to simulate", "min": 10, "max": 180, "step": 1, "default": 90 }
+}

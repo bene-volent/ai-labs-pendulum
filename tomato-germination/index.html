@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomato Plant Growth - AI Labs</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1/dist/tfjs-vis.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/prose.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/experiment-panel.css">
+    <link rel="stylesheet" href="/tomato-germination/tomato.css">
+</head>
+
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="/" class="back-link">← Back to Experiments</a>
+        <div class="nav-title">🍅 Tomato Plant Growth (GDD Model)</div>
+        <button class="experiment-toggle" id="experimentToggle">
+            <span class="toggle-text">Open Experiment</span>
+            <span class="toggle-icon">▶</span>
+        </button>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Left Panel: Theory Content -->
+        <div class="theory-panel" id="theoryPanel">
+            <div class="prose" id="theoryContent">
+                <p>Loading content...</p>
+            </div>
+        </div>
+
+        <!-- Right Panel: Experiment -->
+        <div class="experiment-panel" id="experimentPanel">
+            <div class="resize-handle" id="resizeHandle"></div>
+            
+            <div class="experiment-content">
+                <!-- Mode Selection -->
+                <div class="button-group">
+                    <button class="btn-formula active" id="formulaModeBtn">
+                        📐 Formula Mode
+                    </button>
+                    <button class="btn-ml" id="mlModeBtn">
+                        🤖 ML Mode
+                    </button>
+                </div>
+                <div class="mode-hint" id="modeHint">
+                    Using physics-based GDD simulation
+                </div>
+
+                <!-- Visualization Section -->
+                <div class="visualization-container">
+                    <div class="viz-title">Plant Growth Visualization</div>
+                    
+                    <!-- Stage Indicator -->
+                    <div class="stage-indicator" id="stageIndicator">
+                        <div class="stage-label">Day <span id="currentDay">0</span> / <span id="totalDays">90</span></div>
+                        <div class="stage-progress-bar">
+                            <div class="stage-progress-fill" id="stageProgress"></div>
+                        </div>
+                    </div>
+
+                    <!-- P5.js Canvas -->
+                    <div class="canvas-container" id="p5Container"></div>
+
+                    <!-- Animation Controls -->
+                    <div class="animation-controls">
+                        <button class="control-btn" id="playBtn">▶ Play</button>
+                        <button class="control-btn" id="pauseBtn">⏸ Pause</button>
+                        <button class="control-btn" id="resetBtn">↻ Reset</button>
+                        <label class="speed-control">
+                            Speed: 
+                            <select id="speedSelect">
+                                <option value="0.5">0.5x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="2">2x</option>
+                                <option value="5">5x</option>
+                                <option value="10">10x</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <!-- Day Scrubber -->
+                    <div class="day-scrubber">
+                        <input type="range" id="dayScrubber" min="0" max="90" value="0" step="1">
+                    </div>
+                </div>
+
+                <!-- Stats Panel -->
+                <div class="stats-panel">
+                    <div class="stat-box">
+                        <div class="stat-label">GDD Today</div>
+                        <div class="stat-value" id="statGDDToday">0.0°C·d</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">GDD Cumulative</div>
+                        <div class="stat-value" id="statGDDCum">0.0°C·d</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Height</div>
+                        <div class="stat-value" id="statHeight">0.0 cm</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Branches</div>
+                        <div class="stat-value" id="statLeaves">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Fruits</div>
+                        <div class="stat-value" id="statFruits">0 🍅</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Health</div>
+                        <div class="stat-value" id="statHealth">0%</div>
+                    </div>
+                </div>
+
+                <!-- Growth Chart -->
+                <div class="chart-section">
+                    <div class="section-title">Growth Metrics Over Time</div>
+                    <div class="chart-wrapper">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+
+                <!-- Input Controls - Accordion Style -->
+                <div class="controls-container">
+                    <div class="section-title">Environmental Parameters</div>
+                    
+                    <div class="accordion-group">
+                        <!-- Temperature -->
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <span>🌡️ Temperature</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        Average Temperature (°C)
+                                        <span class="control-value" id="valueAvgTemp">24</span>
+                                    </label>
+                                    <input type="range" id="inputAvgTemp" min="8" max="36" step="1" value="24">
+                                    <div class="control-hint">Optimal: 20-28°C | Base: 10°C (minimum growth)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Moisture -->
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <span>💧 Soil Moisture</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        Soil Moisture (%)
+                                        <span class="control-value" id="valueSoilMoisture">60</span>
+                                    </label>
+                                    <input type="range" id="inputSoilMoisture" min="10" max="100" step="1" value="60">
+                                    <div class="control-hint">Optimal: ~60% | Too low = wilting, too high = root rot</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sunlight -->
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <span>☀️ Sunlight</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        Sunlight (hours/day)
+                                        <span class="control-value" id="valueSunlight">9</span>
+                                    </label>
+                                    <input type="range" id="inputSunlight" min="0" max="14" step="0.5" value="9">
+                                    <div class="control-hint">Optimal: 10-12 hours | Maximum photosynthesis at 12+</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nutrients -->
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <span>🌾 Nutrients</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        Soil Nutrient Index (0-100)
+                                        <span class="control-value" id="valueSoilN">60</span>
+                                    </label>
+                                    <input type="range" id="inputSoilN" min="0" max="100" step="1" value="60">
+                                    <div class="control-hint">Higher = darker green leaves, faster growth</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pests -->
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <span>🐛 Pest Pressure</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        Pest Pressure (0-10)
+                                        <span class="control-value" id="valuePestPressure">1</span>
+                                    </label>
+                                    <input type="range" id="inputPestPressure" min="0" max="10" step="1" value="1">
+                                    <div class="control-hint">Reduces growth rate, damages fruits in late stages</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Simulation Duration -->
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <span>📅 Duration</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        Days to Simulate
+                                        <span class="control-value" id="valueDays">90</span>
+                                    </label>
+                                    <input type="range" id="inputDays" min="10" max="180" step="1" value="90">
+                                    <div class="control-hint">Full cycle: ~90 days from seed to ripe tomatoes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Run Simulation Button -->
+                    <button class="btn-primary" id="runSimBtn">🚀 Run Simulation</button>
+                </div>
+
+                <!-- ML Training Section (Hidden by default) -->
+                <div class="ml-section" id="mlSection" style="display: none;">
+                    <div class="section-title">Machine Learning Training</div>
+                    
+                    <div class="ml-info-box">
+                        <strong>How it works:</strong> The model is trained on 1000+ synthetic growth simulations 
+                        to predict plant height at any target day based on environmental conditions.
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">
+                            Target Day for Prediction
+                            <span class="control-value" id="valueTargetDay">60</span>
+                        </label>
+                        <input type="range" id="inputTargetDay" min="10" max="180" step="1" value="60">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">
+                            Training Epochs
+                            <span class="control-value" id="valueEpochs">40</span>
+                        </label>
+                        <input type="range" id="inputEpochs" min="10" max="100" step="10" value="40">
+                    </div>
+
+                    <button class="btn-primary" id="trainModelBtn">🤖 Train Model</button>
+                    
+                    <div class="status-message" id="mlStatus"></div>
+
+                    <div class="model-status" id="modelStatus">
+                        Model not trained yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/experiment-controller.js"></script>
+    <script src="/js/chart-utils.js"></script>
+    <script src="/tomato-germination/ml-tomato.js"></script>
+    <script src="/tomato-germination/tomato.js"></script>
+
+    <script>
+        // Load theory content
+        fetch('/tomato-germination/tomato-theory.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('theoryContent').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error loading theory content:', error);
+                document.getElementById('theoryContent').innerHTML = 
+                    '<p>Error loading content. Please refresh the page.</p>';
+            });
+    </script>
+</body>
+
+</html>

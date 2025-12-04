@@ -1,0 +1,9 @@
+{
+  "name": "Tomato Phenology (90-day)",
+  "subject": "Biology",
+  "class": 6,
+  "description": "GDD-driven tomato phenology simulator with moisture, light, nutrient and pest effects. Produces daily plant states for 90 days and supports on-the-spot TF.js model training to predict height at a target day.",
+  "icon": "tomato.png",
+  "defaultTargetDay": 60,
+  "author": "AI Lab Backend"
+}

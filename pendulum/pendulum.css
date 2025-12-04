@@ -150,3 +150,54 @@
 #ml-training-panel.visible {
     display: block;
 }
+
+
+.btn-secondary {
+    width: 100%;
+    padding: 10px;
+    background: #757575;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #616161;
+    transform: translateY(-1px);
+}
+
+.btn-secondary.paused {
+    background: #4CAF50;
+}
+
+.btn-secondary.paused:hover {
+    background: #45a049;
+}
+
+/* Add after the existing .btn-secondary styles */
+
+.btn-reset {
+    width: 100%;
+    padding: 10px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-reset:hover {
+    background: #d32f2f;
+    transform: translateY(-1px);
+}
+
+.btn-reset:active {
+    transform: translateY(0);
+}

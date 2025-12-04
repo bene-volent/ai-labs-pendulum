@@ -1,0 +1,12 @@
+{
+  "day": { "type": "number", "label": "Day (d)" },
+  "stage": { "type": "string", "label": "Phenology Stage" },
+  "GDD_today": { "type": "number", "label": "Daily GDD" },
+  "GDD_cum": { "type": "number", "label": "Cumulative GDD" },
+  "germinatedPct": { "type": "number", "label": "Germination (%)" },
+  "heightCm": { "type": "number", "label": "Height (cm)" },
+  "leafCount": { "type": "number", "label": "Leaf count" },
+  "flowering": { "type": "boolean", "label": "Flowering" },
+  "fruitCount": { "type": "number", "label": "Fruit count" },
+  "healthIndex": { "type": "number", "label": "Health (0-1)" }
+}

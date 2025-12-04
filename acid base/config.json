@@ -1,0 +1,20 @@
+{
+  "indicators": {
+    "litmus": {
+      "pKa": 7.0,
+      "acid_color": [255, 0, 0],
+      "base_color": [0, 0, 255]
+    },
+    "universal": {
+      "color_map": [
+        { "pH": 1, "rgb": [255, 0, 0] },
+        { "pH": 4, "rgb": [255, 128, 0] },
+        { "pH": 7, "rgb": [0, 255, 0] },
+        { "pH": 10, "rgb": [0, 0, 255] },
+        { "pH": 14, "rgb": [128, 0, 128] }
+      ]
+    }
+  },
+  "default_path_length_cm": 1.0,
+  "noise_sigma": 0.01
+}

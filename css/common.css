@@ -176,3 +176,282 @@ button.btn-secondary:hover {
         font-size: 16px;
     }
 }
+
+
+
+/* Main Visor Container */
+.visor[data-isopen="true"] {
+    width: 550px !important;
+    background: white !important;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.1) !important;
+    border-left: 1px solid #e0e0e0 !important;
+    z-index: 9999 !important;
+}
+
+/* Visor Controls (Maximize/Hide buttons) */
+.visor-controls {
+    background: #fafafa !important;
+    border-radius: 4px !important;
+    padding: 10px !important;
+    margin-bottom: 12px !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.visor-controls button {
+    background: white !important;
+    color: #333 !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    margin-right: 6px !important;
+}
+
+.visor-controls button:hover {
+    background: #f5f5f5 !important;
+    border-color: #667eea !important;
+    color: #667eea !important;
+}
+
+.visor-controls button:last-child {
+    margin-right: 0 !important;
+}
+
+/* Visor Tabs */
+.visor-tabs {
+    background: white !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    padding: 0 10px !important;
+    margin-bottom: 12px !important;
+}
+
+.tf-tab {
+    color: #666 !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    padding: 8px 16px !important;
+    border-bottom: 2px solid transparent !important;
+    transition: all 0.2s ease !important;
+}
+
+.tf-tab[data-isactive="true"] {
+    border-bottom-color: #667eea !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+/* Surface Container (Chart cards) */
+.tf-surface {
+    background: white !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    max-height: 600px !important;
+    overflow-y: auto !important;
+    border: 1px solid #f0f0f0 !important;
+}
+
+/* Surface Title */
+.tf-label {
+    background: #fafafa !important;
+    color: #333 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 10px 15px !important;
+    margin-bottom: 15px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    border-left: 3px solid #667eea !important;
+}
+
+/* Subsurface Title (onEpochEnd, etc.) */
+.subsurface-title {
+    background: white !important;
+    color: #555 !important;
+    border-left: 3px solid #667eea !important;
+    border-radius: 0 !important;
+    padding: 8px 12px !important;
+    margin-bottom: 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+
+/* Chart Container - REMOVED padding and sizing that affects canvas */
+.vega-embed {
+    border: 1px solid #f0f0f0 !important;
+    border-radius: 4px !important;
+    margin-bottom: 12px !important;
+    background: white !important;
+    transition: all 0.2s ease !important;
+    /* DO NOT add padding here - it breaks Vega sizing */
+}
+
+.vega-embed:hover {
+    border-color: #e0e0e0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Canvas - Let Vega control dimensions, only style appearance */
+.vega-embed canvas {
+    display: block !important; /* Prevents extra spacing */
+    /* DO NOT set width/height - Vega handles this */
+}
+
+/* Draw area wrapper - prevent expanding */
+.tf-draw-area {
+    overflow: visible !important;
+}
+
+/* Subsurface container - prevent expanding */
+.tf-draw-area > div[data-name] {
+    overflow: visible !important;
+}
+
+/* Scrollbar Styling for Visor */
+.visor::-webkit-scrollbar,
+.tf-surface::-webkit-scrollbar {
+    width: 6px;
+}
+
+.visor::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 3px;
+}
+
+.visor::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 3px;
+}
+
+.visor::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .visor[data-isopen="true"] {
+        width: 400px !important;
+    }
+    
+    .tf-surface {
+        max-height: 500px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .visor[data-isopen="true"] {
+        width: 100% !important;
+        right: 0 !important;
+    }
+}
+
+
+/* Enhanced status message styles - matching existing design */
+.status-message {
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin: 12px 0;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    display: none;
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.status-message.show {
+    display: block;
+}
+
+.status-message.status-info {
+    background: #f0f9ff;
+    color: #0369a1;
+    border-left: 3px solid #667eea;
+}
+
+.status-message.status-success {
+    background: #f0fdf4;
+    color: #15803d;
+    border-left: 3px solid #4CAF50;
+}
+
+.status-message.status-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border-left: 3px solid #ef4444;
+}
+
+/* Model Status Badge - matching your stat-box style */
+#modelStatus {
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    text-align: center;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    color: #666;
+}
+
+/* Train Button - matching your existing button styles */
+#trainModelBtn {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+#trainModelBtn:hover {
+    background: #5568d3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+#trainModelBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#trainModelBtn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* ML Info Box - matching your existing info boxes */
+.ml-info-box {
+    background: #f0f9ff;
+    border: 1px solid #e0f2fe;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.ml-info-box strong {
+    color: #333;
+    font-weight: 600;
+}
