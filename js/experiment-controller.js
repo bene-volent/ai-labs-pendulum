@@ -22,6 +22,9 @@ class ExperimentController {
     }
     
     setupToggle() {
+        // By default open
+        this.openPanel();
+
         this.toggle.addEventListener('click', () => {
             const isOpen = this.panel.classList.contains('open');
             
